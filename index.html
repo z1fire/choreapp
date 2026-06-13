@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Household chore tracking for the whole family">
+  <meta name="description" content="Track the chores you do, when you do them">
   <title>ChoreApp</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg">
@@ -16,129 +16,79 @@
 </head>
 <body>
 
-  <!-- Install Banner (hidden by default, shown via JS when installable) -->
-  <div id="install-banner" class="install-banner" style="display:none">
+  <!-- Install Banner -->
+  <div id="install-banner" class="install-banner install-banner--hidden">
     <span class="install-text">Add ChoreApp to your home screen!</span>
-    <button id="install-btn">Install</button>
-    <button id="install-dismiss" class="dismiss">×</button>
+    <button type="button" id="install-btn">Install</button>
+    <button type="button" id="install-dismiss" class="dismiss" aria-label="Dismiss">×</button>
   </div>
 
   <!-- Header -->
   <header class="header">
-    <div class="header-top">
-      <div>
-        <h1 id="house-name">Our Home</h1>
-        <div class="header-subtitle" id="subtitle">0 chores pending</div>
-      </div>
-      <button class="icon-btn" id="settings-btn" aria-label="Settings">⚙</button>
+    <div>
+      <h1>ChoreApp</h1>
+      <div class="header-sub">Tap a chore to log it</div>
     </div>
-    <nav class="tabs">
-      <button class="tab active" data-filter="all">All</button>
-      <button class="tab" data-filter="today" id="tab-today">Today</button>
-      <button class="tab" data-filter="done">Done</button>
-    </nav>
+    <button type="button" class="edit-btn" id="edit-btn">Edit</button>
   </header>
 
-  <!-- Chore List -->
-  <main class="main">
-    <div class="chores-list" id="chores-list"></div>
+  <!-- Home View: Chore Grid -->
+  <main class="view" id="view-home">
+    <div class="chore-grid" id="chore-grid"></div>
   </main>
 
+  <!-- History View -->
+  <section class="view" id="view-history" hidden>
+    <div class="history-header">
+      <h2>History</h2>
+      <div class="history-actions">
+        <button type="button" class="small-btn" id="export-btn">⬇ Export</button>
+        <button type="button" class="small-btn" id="import-btn">⬆ Import</button>
+      </div>
+    </div>
+    <input type="file" id="import-input" class="hidden-input" accept=".json">
+    <div id="history-list"></div>
+  </section>
+
   <!-- FAB -->
-  <button class="fab" id="fab" aria-label="Add chore">+</button>
+  <button type="button" class="fab" id="fab" aria-label="Add chore">+</button>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button type="button" class="nav-tab active" data-view="home">
+      <span class="nav-icon">🏠</span>
+      Home
+    </button>
+    <button type="button" class="nav-tab" data-view="history">
+      <span class="nav-icon">📋</span>
+      History
+    </button>
+  </nav>
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
-  <!-- ── Add Chore Modal ── -->
+  <!-- Add Chore Modal -->
   <div class="modal-overlay" id="add-modal" role="dialog" aria-modal="true" aria-label="Add chore">
     <div class="modal">
       <div class="modal-handle"></div>
       <h2>Add Chore</h2>
       <form id="add-chore-form">
         <div class="form-group">
-          <label for="chore-title">Chore</label>
           <input
-            id="chore-title"
+            id="new-chore-input"
             type="text"
-            placeholder="e.g. Wash dishes"
+            placeholder="e.g. Clean windows"
             required
-            maxlength="100"
+            maxlength="40"
             autocomplete="off"
           >
         </div>
-        <div class="form-group">
-          <label for="chore-person">Assigned to</label>
-          <div class="select-wrapper">
-            <select id="chore-person">
-              <option value="Everyone">Everyone</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="chore-date">Due date</label>
-          <input id="chore-date" type="date">
-        </div>
-        <div class="form-group">
-          <label for="chore-recurring">Repeats</label>
-          <div class="select-wrapper">
-            <select id="chore-recurring">
-              <option value="none">Once (no repeat)</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-          </div>
-        </div>
         <div class="form-actions">
           <button type="button" class="btn btn-ghost" id="cancel-add">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add Chore</button>
+          <button type="submit" class="btn btn-primary">Add</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- ── Settings Modal ── -->
-  <div class="modal-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-        <h2 style="margin:0">Settings</h2>
-        <button class="icon-btn" id="close-settings" style="background:var(--bg);color:var(--text-secondary)" aria-label="Close">×</button>
-      </div>
-
-      <!-- Household Name -->
-      <div class="settings-section">
-        <h3>Household</h3>
-        <div class="form-group" style="margin:0">
-          <input id="house-name-input" type="text" placeholder="Our Home" maxlength="40">
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- People -->
-      <div class="settings-section">
-        <h3>People</h3>
-        <div class="people-list" id="people-list"></div>
-        <div class="add-person-row">
-          <input id="new-person-input" type="text" placeholder="Add person..." maxlength="30">
-          <button id="add-person-btn">Add</button>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <!-- Data -->
-      <div class="settings-section">
-        <h3>Data</h3>
-        <div class="action-row" style="margin-bottom:10px">
-          <button class="action-btn" id="export-btn">⬇ Export Backup</button>
-          <button class="action-btn" id="import-btn">⬆ Import Backup</button>
-        </div>
-        <input type="file" id="import-input" accept=".json" style="display:none">
-        <button class="action-btn danger" id="clear-btn" style="width:100%">🗑 Clear All Data</button>
-      </div>
     </div>
   </div>
 
