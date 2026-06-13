@@ -68,27 +68,48 @@
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
-  <!-- Add Chore Modal -->
+  <!-- ── Library / Add Chore Modal ── -->
   <div class="modal-overlay" id="add-modal" role="dialog" aria-modal="true" aria-label="Add chore">
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <h2>Add Chore</h2>
-      <form id="add-chore-form">
-        <div class="form-group">
+    <div class="modal modal-library">
+      <div class="library-modal-header">
+        <div class="modal-handle"></div>
+        <div class="library-title-row">
+          <h2>Add Chore</h2>
+          <button type="button" class="done-btn" id="close-library">Done</button>
+        </div>
+        <div class="library-search-wrap">
           <input
-            id="new-chore-input"
-            type="text"
-            placeholder="e.g. Clean windows"
-            required
-            maxlength="40"
+            type="search"
+            id="library-search"
+            placeholder="Search or type a custom chore…"
             autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
           >
         </div>
-        <div class="form-actions">
-          <button type="button" class="btn btn-ghost" id="cancel-add">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add</button>
-        </div>
-      </form>
+      </div>
+      <div class="library-list" id="library-list"></div>
+      <div class="custom-add-wrap" id="custom-add-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ── Note Modal ── -->
+  <div class="modal-overlay" id="note-modal" role="dialog" aria-modal="true" aria-label="Add note">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2>Add Note</h2>
+      <p class="note-chore-label" id="note-chore-label"></p>
+      <textarea
+        id="note-input"
+        class="note-textarea"
+        placeholder="e.g. Used new cleaner, only did half the load…"
+        rows="4"
+        maxlength="500"
+      ></textarea>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="cancel-note">Skip</button>
+        <button type="button" class="btn btn-primary" id="save-note">Save Note</button>
+      </div>
     </div>
   </div>
 

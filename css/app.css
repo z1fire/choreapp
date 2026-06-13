@@ -191,6 +191,13 @@ body {
 .history-info { flex: 1; }
 .history-chore-name { font-size: 15px; font-weight: 600; }
 .history-time { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.history-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-style: italic;
+  line-height: 1.4;
+}
 .history-delete {
   background: none;
   border: none;
@@ -288,9 +295,108 @@ body {
   height: 4px;
   background: var(--border);
   border-radius: 2px;
-  margin: 0 auto 20px;
+  margin: 0 auto 16px;
 }
 .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+
+/* ── Library Modal ──────────────────────────────────── */
+.modal-library {
+  height: 82vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.library-modal-header {
+  flex-shrink: 0;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.library-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.library-title-row h2 { margin: 0; }
+
+.done-btn {
+  background: var(--green-light, #C8E6C9);
+  color: var(--green-dark);
+  border: none;
+  border-radius: 20px;
+  padding: 7px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.library-search-wrap { position: relative; }
+.library-search-wrap input[type="search"] {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.library-search-wrap input[type="search"]:focus { border-color: var(--green); background: var(--surface); }
+
+.library-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.library-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.library-item:last-child { border-bottom: none; }
+.library-item--added { opacity: 0.5; }
+.library-item-name { font-size: 16px; font-weight: 500; }
+.library-item-add {
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.library-item-add:active { opacity: 0.75; }
+.library-item-check {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.library-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.custom-add-wrap {
+  flex-shrink: 0;
+  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+}
+.custom-add-wrap:empty { display: none; }
 
 /* ── Form ───────────────────────────────────────────── */
 .form-group { margin-bottom: 14px; }
@@ -320,6 +426,29 @@ body {
 .btn-primary { background: var(--green); color: white; }
 .btn-ghost { background: var(--bg); color: var(--text-secondary); }
 
+/* ── Note Modal ─────────────────────────────────────── */
+.note-chore-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.note-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+  transition: border-color 0.15s;
+}
+.note-textarea:focus { border-color: var(--green); }
+
 /* ── Toast ──────────────────────────────────────────── */
 .toast {
   position: fixed;
@@ -342,15 +471,17 @@ body {
   gap: 12px;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: all; }
-.undo-btn {
+.toast-action-btn {
   background: none;
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.4);
   color: #80CBC4;
-  padding: 3px 10px;
+  padding: 4px 11px;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ── Utility ────────────────────────────────────────── */
