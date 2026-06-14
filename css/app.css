@@ -84,6 +84,8 @@ body {
   text-align: center;
   border-top: 4px solid var(--tile-color, var(--green));
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .chore-tile:active:not(.edit-mode) { transform: scale(0.96); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 .chore-tile.tapped { transform: scale(0.94); }
