@@ -381,6 +381,20 @@ body {
 }
 .library-title-row h2 { margin: 0; }
 
+.library-title-btns { display: flex; gap: 8px; align-items: center; }
+.library-edit-toggle {
+  background: none;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.library-edit-toggle.active { border-color: var(--danger); color: var(--danger); }
+
 .done-btn {
   background: var(--green-light, #C8E6C9);
   color: var(--green-dark);
@@ -462,6 +476,24 @@ body {
   font-weight: 600;
   color: var(--green-dark);
 }
+.library-item--editing { background: #FFF5F5; }
+.library-delete-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.library-delete-btn:active { opacity: 0.75; }
 .custom-chore-actions { display: flex; gap: 10px; }
 
 .library-empty {

@@ -33,6 +33,7 @@ let undoTimer = null;
 let expandedDates = new Set();
 let choreFilter = '';
 let editingLogId = null;
+let libraryEditMode = false;
 
 // ── Storage ────────────────────────────────────────────────────────────────
 function loadState() {
@@ -117,6 +118,22 @@ function addChoreFromLibrary(name) {
   state.chores.push({ id: uid(), name, color: COLORS[state.chores.length % COLORS.length] });
   saveState();
   renderHomeGrid();
+}
+
+function deleteFromLibrary(name) {
+  state.library = state.library.filter(n => n.toLowerCase() !== name.toLowerCase());
+  state.chores = state.chores.filter(c => c.name.toLowerCase() !== name.toLowerCase());
+  saveState();
+  renderHomeGrid();
+  renderLibraryModal(document.getElementById('library-search').value);
+}
+
+function toggleLibraryEdit() {
+  libraryEditMode = !libraryEditMode;
+  const btn = document.getElementById('library-edit-btn');
+  btn.textContent = libraryEditMode ? 'Done' : 'Edit';
+  btn.classList.toggle('active', libraryEditMode);
+  renderLibraryModal(document.getElementById('library-search').value);
 }
 
 function addCustomChore(name) {
@@ -268,13 +285,15 @@ function renderLibraryModal(searchTerm) {
     list.innerHTML = filtered.map(name => {
       const isActive = activeNames.has(name.toLowerCase());
       return `
-        <div class="library-item${isActive ? ' library-item--added' : ''}" data-name="${escHtml(name)}">
+        <div class="library-item${isActive ? ' library-item--added' : ''}${libraryEditMode ? ' library-item--editing' : ''}" data-name="${escHtml(name)}">
           <span class="library-item-name">${escHtml(name)}</span>
           <div class="library-item-actions">
-            ${isActive
-              ? '<span class="library-item-check">✓ On Grid</span>'
-              : `<button type="button" class="library-log-btn" data-name="${escHtml(name)}">Log</button>
-                 <button type="button" class="library-item-add" data-name="${escHtml(name)}">+ Add</button>`}
+            ${libraryEditMode
+              ? `<button type="button" class="library-delete-btn" data-name="${escHtml(name)}" aria-label="Remove ${escHtml(name)}">✕</button>`
+              : isActive
+                ? '<span class="library-item-check">✓ On Grid</span>'
+                : `<button type="button" class="library-log-btn" data-name="${escHtml(name)}">Log</button>
+                   <button type="button" class="library-item-add" data-name="${escHtml(name)}">+ Add</button>`}
           </div>
         </div>`;
     }).join('');
@@ -285,9 +304,11 @@ function renderLibraryModal(searchTerm) {
         renderLibraryModal(searchTerm);
       });
     });
-
     list.querySelectorAll('.library-log-btn').forEach(btn => {
       btn.addEventListener('click', () => logQuick(btn.dataset.name));
+    });
+    list.querySelectorAll('.library-delete-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteFromLibrary(btn.dataset.name));
     });
   }
 
@@ -313,8 +334,11 @@ function renderLibraryModal(searchTerm) {
 }
 
 function openLibraryModal() {
-  renderLibraryModal('');
+  libraryEditMode = false;
+  document.getElementById('library-edit-btn').textContent = 'Edit';
+  document.getElementById('library-edit-btn').classList.remove('active');
   document.getElementById('library-search').value = '';
+  renderLibraryModal('');
   openModal('add-modal');
 }
 
@@ -563,7 +587,8 @@ function init() {
   document.getElementById('fab').addEventListener('click', openLibraryModal);
 
   // Library modal
-  document.getElementById('close-library').addEventListener('click', () => closeModal('add-modal'));
+  document.getElementById('close-library').addEventListener('click', () => { libraryEditMode = false; closeModal('add-modal'); });
+  document.getElementById('library-edit-btn').addEventListener('click', toggleLibraryEdit);
   document.getElementById('library-search').addEventListener('input', e => {
     renderLibraryModal(e.target.value);
   });
