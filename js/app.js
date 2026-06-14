@@ -38,10 +38,31 @@ function loadState() {
     if (raw) {
       const saved = JSON.parse(raw);
       state = { ...defaultState(), ...saved };
-      // Ensure library exists (migration from old version)
-      if (!state.library) state.library = [...DEFAULT_LIBRARY];
+
+      // Migrate chores: v1 used `title`, v2+ uses `name`; also ensure color exists
+      state.chores = (state.chores || [])
+        .filter(c => c && (c.name || c.title))
+        .map((c, i) => ({
+          id: c.id || uid(),
+          name: c.name || c.title,
+          color: c.color || COLORS[i % COLORS.length]
+        }));
+
+      // Ensure library is a clean string array
+      if (!Array.isArray(state.library) || !state.library.length) {
+        state.library = [...DEFAULT_LIBRARY];
+      } else {
+        state.library = state.library.filter(n => typeof n === 'string' && n.trim());
+      }
+
+      // Ensure log entries have the notes field
+      state.log = (state.log || [])
+        .filter(e => e && e.id)
+        .map(e => ({ notes: '', ...e }));
     }
-  } catch {}
+  } catch {
+    state = defaultState();
+  }
 }
 
 function saveState() {
