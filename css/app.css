@@ -163,19 +163,63 @@ body {
 .empty-state h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
 .empty-state p { font-size: 14px; line-height: 1.5; }
 
-/* ── History ────────────────────────────────────────── */
-.history-group { margin-bottom: 24px; }
+/* ── History Filter ─────────────────────────────────── */
+.history-filter-wrap { margin-bottom: 14px; }
+.history-filter-wrap input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 15px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.history-filter-wrap input:focus { border-color: var(--green); }
 
-.history-date-label {
-  font-size: 12px;
+/* ── Calendar Day Rows ──────────────────────────────── */
+.cal-month { margin-bottom: 24px; }
+.cal-month-label {
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
   color: var(--text-secondary);
   margin-bottom: 8px;
   padding: 0 2px;
 }
+.cal-day {
+  background: var(--surface);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.cal-day-header {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-day--open .cal-day-header { border-bottom: 1px solid var(--border); }
+.cal-day-left { display: flex; flex-direction: column; gap: 2px; }
+.cal-day-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.cal-day-date { font-size: 13px; color: var(--text-secondary); }
+.cal-day-right { display: flex; align-items: center; gap: 10px; }
+.cal-day-count { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.cal-chevron { font-size: 16px; color: var(--text-secondary); }
+.cal-day-entries { padding: 4px 0; }
 
+/* ── History Entries ────────────────────────────────── */
 .history-entry {
   background: var(--surface);
   border-radius: 10px;

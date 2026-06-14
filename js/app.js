@@ -30,6 +30,8 @@ let currentView = 'home';
 let editMode = false;
 let lastLogId = null;
 let undoTimer = null;
+let expandedDates = new Set();
+let choreFilter = '';
 
 // ── Storage ────────────────────────────────────────────────────────────────
 function loadState() {
@@ -305,55 +307,105 @@ function openLibraryModal() {
 // ── Render: History ────────────────────────────────────────────────────────
 function renderHistory() {
   const el = document.getElementById('history-list');
-  if (!state.log.length) {
+
+  const filterTerm = choreFilter.toLowerCase().trim();
+  const filteredLog = filterTerm
+    ? state.log.filter(e => e.choreName.toLowerCase().includes(filterTerm))
+    : state.log;
+
+  if (!filteredLog.length) {
     el.innerHTML = `<div class="empty-state">
-      <div class="emoji">📋</div>
-      <h2>No history yet</h2>
-      <p>Log a chore on the Home tab and it'll appear here.</p>
+      <div class="emoji">${filterTerm ? '🔍' : '📋'}</div>
+      <h2>${filterTerm ? 'No matches' : 'No history yet'}</h2>
+      <p>${filterTerm ? `No chores found matching "${escHtml(choreFilter)}".` : 'Log a chore on the Home tab and it\'ll appear here.'}</p>
     </div>`;
     return;
   }
 
-  const grouped = {};
-  [...state.log].reverse().forEach(entry => {
+  // Group entries by local date (reverse chron)
+  const byDate = {};
+  [...filteredLog].reverse().forEach(entry => {
     const date = localDateStr(entry.doneAt);
-    if (!grouped[date]) grouped[date] = [];
-    grouped[date].push(entry);
+    if (!byDate[date]) byDate[date] = [];
+    byDate[date].push(entry);
+  });
+
+  // Group dates by month
+  const byMonth = {};
+  Object.keys(byDate).forEach(date => {
+    const month = date.slice(0, 7);
+    if (!byMonth[month]) byMonth[month] = [];
+    byMonth[month].push(date);
   });
 
   const today = todayStr();
   const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
 
-  el.innerHTML = Object.entries(grouped).map(([date, entries]) => {
-    let label;
-    if (date === today) label = 'Today';
-    else if (date === yesterday) label = 'Yesterday';
-    else label = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  el.innerHTML = Object.entries(byMonth)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([month, dates]) => {
+      const monthLabel = new Date(month + '-15T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      return `
+        <div class="cal-month">
+          <div class="cal-month-label">${escHtml(monthLabel)}</div>
+          ${dates.map(date => calDayHTML(date, byDate[date], today, yesterday, filterTerm)).join('')}
+        </div>`;
+    }).join('');
 
-    return `
-      <div class="history-group">
-        <div class="history-date-label">${escHtml(label)}</div>
-        ${entries.map(entry => {
-          const chore = state.chores.find(c => c.id === entry.choreId);
-          const color = chore ? chore.color : '#9E9E9E';
-          const time = new Date(entry.doneAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-          return `
-            <div class="history-entry">
-              <div class="history-dot" style="background:${color}"></div>
-              <div class="history-info">
-                <div class="history-chore-name">${escHtml(entry.choreName)}</div>
-                <div class="history-time">${escHtml(time)}</div>
-                ${entry.notes ? `<div class="history-note">${escHtml(entry.notes)}</div>` : ''}
-              </div>
-              <button type="button" class="history-delete" data-log-id="${entry.id}" aria-label="Delete">✕</button>
-            </div>`;
-        }).join('')}
-      </div>`;
-  }).join('');
+  el.querySelectorAll('.cal-day-header').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const date = btn.dataset.date;
+      if (expandedDates.has(date)) expandedDates.delete(date);
+      else expandedDates.add(date);
+      renderHistory();
+    });
+  });
 
   el.querySelectorAll('.history-delete').forEach(btn => {
     btn.addEventListener('click', () => deleteLogEntry(btn.dataset.logId));
   });
+}
+
+function calDayHTML(date, entries, today, yesterday, filterTerm) {
+  const isOpen = filterTerm ? true : expandedDates.has(date);
+  const count = entries.length;
+
+  let dayName, dayFull;
+  if (date === today) { dayName = 'Today'; }
+  else if (date === yesterday) { dayName = 'Yesterday'; }
+  else { dayName = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }); }
+  dayFull = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return `
+    <div class="cal-day${isOpen ? ' cal-day--open' : ''}">
+      <button type="button" class="cal-day-header" data-date="${date}">
+        <div class="cal-day-left">
+          <span class="cal-day-name">${escHtml(dayName)}</span>
+          <span class="cal-day-date">${escHtml(dayFull)}</span>
+        </div>
+        <div class="cal-day-right">
+          <span class="cal-day-count">${count} chore${count !== 1 ? 's' : ''}</span>
+          <span class="cal-chevron">${isOpen ? '▾' : '▸'}</span>
+        </div>
+      </button>
+      ${isOpen ? `<div class="cal-day-entries">${entries.map(entryHTML).join('')}</div>` : ''}
+    </div>`;
+}
+
+function entryHTML(entry) {
+  const chore = state.chores.find(c => c.id === entry.choreId);
+  const color = chore ? chore.color : '#9E9E9E';
+  const time = new Date(entry.doneAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return `
+    <div class="history-entry">
+      <div class="history-dot" style="background:${color}"></div>
+      <div class="history-info">
+        <div class="history-chore-name">${escHtml(entry.choreName)}</div>
+        <div class="history-time">${escHtml(time)}</div>
+        ${entry.notes ? `<div class="history-note">${escHtml(entry.notes)}</div>` : ''}
+      </div>
+      <button type="button" class="history-delete" data-log-id="${entry.id}" aria-label="Delete">✕</button>
+    </div>`;
 }
 
 // ── View Switching ─────────────────────────────────────────────────────────
@@ -366,7 +418,10 @@ function showView(view) {
   document.querySelectorAll('.nav-tab').forEach(t =>
     t.classList.toggle('active', t.dataset.view === view)
   );
-  if (view === 'history') renderHistory();
+  if (view === 'history') {
+    expandedDates.add(todayStr());
+    renderHistory();
+  }
 }
 
 // ── Edit Mode ──────────────────────────────────────────────────────────────
@@ -496,6 +551,12 @@ function init() {
   // Note modal
   document.getElementById('save-note').addEventListener('click', saveNote);
   document.getElementById('cancel-note').addEventListener('click', () => closeModal('note-modal'));
+
+  // History filter
+  document.getElementById('history-filter').addEventListener('input', e => {
+    choreFilter = e.target.value;
+    renderHistory();
+  });
 
   // Export / Import
   document.getElementById('export-btn').addEventListener('click', exportData);
