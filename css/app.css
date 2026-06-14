@@ -633,38 +633,6 @@ input, textarea {
 .history-actions { display: flex; gap: 8px; }
 .fab--hidden { display: none !important; }
 
-/* ── Install Banner ─────────────────────────────────── */
-.install-banner--hidden { display: none; }
-.install-banner {
-  background: #E8F5E9;
-  border-bottom: 1px solid #C8E6C9;
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--green-dark);
-}
-.install-banner .install-text { flex: 1; font-weight: 500; }
-.install-banner button {
-  background: var(--green);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 7px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.install-banner .dismiss {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 22px;
-  cursor: pointer;
-  padding: 2px;
-}
-
 /* ── Data row in history header ─────────────────────── */
 .history-header {
   display: flex;
