@@ -32,6 +32,7 @@ let lastLogId = null;
 let undoTimer = null;
 let expandedDates = new Set();
 let choreFilter = '';
+let editingLogId = null;
 
 // ── Storage ────────────────────────────────────────────────────────────────
 function loadState() {
@@ -100,8 +101,8 @@ function lastDoneText(choreId) {
   return `${Math.floor(diffDays / 30)} months ago`;
 }
 
-function isDoneToday(choreId) {
-  return state.log.some(e => e.choreId === choreId && localDateStr(e.doneAt) === todayStr());
+function countDoneToday(choreId) {
+  return state.log.filter(e => e.choreId === choreId && localDateStr(e.doneAt) === todayStr()).length;
 }
 
 function escHtml(str) {
@@ -171,25 +172,36 @@ function deleteLogEntry(logId) {
   renderHistory();
 }
 
-// ── Notes ──────────────────────────────────────────────────────────────────
-function openNoteModal() {
-  const entry = state.log.find(e => e.id === lastLogId);
-  if (!entry) { showSimpleToast('No recent log to add note to'); return; }
-  hideToast();
-  document.getElementById('note-chore-label').textContent = entry.choreName;
-  document.getElementById('note-input').value = entry.notes || '';
-  openModal('note-modal');
-  setTimeout(() => document.getElementById('note-input').focus(), 300);
+// ── Edit Entry Modal ───────────────────────────────────────────────────────
+function isoToLocalInput(isoString) {
+  const d = new Date(isoString);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function saveNote() {
-  const entry = state.log.find(e => e.id === lastLogId);
+function openEditEntryModal(logId) {
+  const entry = state.log.find(e => e.id === logId);
+  if (!entry) return;
+  editingLogId = logId;
+  hideToast();
+  document.getElementById('edit-entry-chore').textContent = entry.choreName;
+  document.getElementById('edit-entry-datetime').value = isoToLocalInput(entry.doneAt);
+  document.getElementById('edit-entry-notes').value = entry.notes || '';
+  openModal('edit-entry-modal');
+}
+
+function saveEditEntry() {
+  const entry = state.log.find(e => e.id === editingLogId);
   if (entry) {
-    entry.notes = document.getElementById('note-input').value.trim();
+    const dtVal = document.getElementById('edit-entry-datetime').value;
+    if (dtVal) entry.doneAt = new Date(dtVal).toISOString();
+    entry.notes = document.getElementById('edit-entry-notes').value.trim();
     saveState();
+    renderHomeGrid();
     if (currentView === 'history') renderHistory();
   }
-  closeModal('note-modal');
+  closeModal('edit-entry-modal');
+  editingLogId = null;
 }
 
 // ── Render: Home ───────────────────────────────────────────────────────────
@@ -204,7 +216,9 @@ function renderHomeGrid() {
     return;
   }
   grid.innerHTML = state.chores.map(chore => {
-    const doneToday = isDoneToday(chore.id);
+    const count = countDoneToday(chore.id);
+    const doneToday = count > 0;
+    const lastText = doneToday ? `${count}× today` : lastDoneText(chore.id);
     return `
       <button type="button"
         class="chore-tile${doneToday ? ' done-today' : ''}${editMode ? ' edit-mode' : ''}"
@@ -214,10 +228,10 @@ function renderHomeGrid() {
       >
         ${editMode ? `<span class="delete-x" data-id="${chore.id}" role="button" aria-label="Delete ${escHtml(chore.name)}">✕</span>` : ''}
         <div class="tile-avatar">
-          ${doneToday ? '<span class="check-icon">✓</span>' : escHtml(chore.name[0].toUpperCase())}
+          ${doneToday ? `<span class="tile-count">${count}</span>` : escHtml(chore.name[0].toUpperCase())}
         </div>
         <div class="tile-name">${escHtml(chore.name)}</div>
-        <div class="tile-last${doneToday ? ' tile-last-done' : ''}">${escHtml(lastDoneText(chore.id))}</div>
+        <div class="tile-last${doneToday ? ' tile-last-done' : ''}">${escHtml(lastText)}</div>
       </button>`;
   }).join('');
 
@@ -361,6 +375,9 @@ function renderHistory() {
     });
   });
 
+  el.querySelectorAll('.history-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openEditEntryModal(btn.dataset.logId));
+  });
   el.querySelectorAll('.history-delete').forEach(btn => {
     btn.addEventListener('click', () => deleteLogEntry(btn.dataset.logId));
   });
@@ -404,7 +421,10 @@ function entryHTML(entry) {
         <div class="history-time">${escHtml(time)}</div>
         ${entry.notes ? `<div class="history-note">${escHtml(entry.notes)}</div>` : ''}
       </div>
-      <button type="button" class="history-delete" data-log-id="${entry.id}" aria-label="Delete">✕</button>
+      <div class="history-entry-btns">
+        <button type="button" class="history-edit-btn" data-log-id="${entry.id}" aria-label="Edit">✎</button>
+        <button type="button" class="history-delete" data-log-id="${entry.id}" aria-label="Delete">✕</button>
+      </div>
     </div>`;
 }
 
@@ -481,10 +501,10 @@ function showLogToast(choreName) {
   const t = document.getElementById('toast');
   t.innerHTML = `
     <span>${escHtml(choreName)} logged</span>
-    <button type="button" class="toast-action-btn" id="note-btn">Note ✎</button>
+    <button type="button" class="toast-action-btn" id="edit-log-btn">Edit ✎</button>
     <button type="button" class="toast-action-btn" id="undo-btn">Undo</button>`;
   t.classList.add('show');
-  document.getElementById('note-btn').addEventListener('click', openNoteModal);
+  document.getElementById('edit-log-btn').addEventListener('click', () => openEditEntryModal(lastLogId));
   document.getElementById('undo-btn').addEventListener('click', undoLog);
   clearTimeout(undoTimer);
   undoTimer = setTimeout(hideToast, 5000);
@@ -548,9 +568,9 @@ function init() {
     renderLibraryModal(e.target.value);
   });
 
-  // Note modal
-  document.getElementById('save-note').addEventListener('click', saveNote);
-  document.getElementById('cancel-note').addEventListener('click', () => closeModal('note-modal'));
+  // Edit entry modal
+  document.getElementById('save-edit-entry').addEventListener('click', saveEditEntry);
+  document.getElementById('cancel-edit-entry').addEventListener('click', () => closeModal('edit-entry-modal'));
 
   // History filter
   document.getElementById('history-filter').addEventListener('input', e => {

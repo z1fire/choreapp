@@ -113,6 +113,7 @@ body {
 .done-today .tile-avatar { background: var(--tile-color, var(--green)); }
 
 .check-icon { font-size: 26px; }
+.tile-count { font-size: 22px; font-weight: 800; color: white; }
 
 .tile-name {
   font-size: 15px;
@@ -246,6 +247,18 @@ body {
   font-style: italic;
   line-height: 1.4;
 }
+.history-entry-btns { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+.history-edit-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+.history-edit-btn:active { color: var(--green); }
 .history-delete {
   background: none;
   border: none;
@@ -255,7 +268,6 @@ body {
   padding: 4px 6px;
   border-radius: 6px;
   transition: color 0.15s;
-  flex-shrink: 0;
 }
 .history-delete:active { color: var(--danger); }
 
@@ -494,13 +506,38 @@ body {
 .btn-primary { background: var(--green); color: white; }
 .btn-ghost { background: var(--bg); color: var(--text-secondary); }
 
-/* ── Note Modal ─────────────────────────────────────── */
-.note-chore-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
-  font-weight: 500;
+/* ── Edit Entry Modal ───────────────────────────────── */
+.edit-entry-chore {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 18px;
 }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  margin-bottom: 7px;
+}
+.form-label-optional { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.form-input:focus { border-color: var(--green); }
 .note-textarea {
   width: 100%;
   padding: 12px 14px;

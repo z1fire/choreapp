@@ -96,22 +96,29 @@
     </div>
   </div>
 
-  <!-- ── Note Modal ── -->
-  <div class="modal-overlay" id="note-modal" role="dialog" aria-modal="true" aria-label="Add note">
+  <!-- ── Edit Entry Modal ── -->
+  <div class="modal-overlay" id="edit-entry-modal" role="dialog" aria-modal="true" aria-label="Edit entry">
     <div class="modal">
       <div class="modal-handle"></div>
-      <h2>Add Note</h2>
-      <p class="note-chore-label" id="note-chore-label"></p>
-      <textarea
-        id="note-input"
-        class="note-textarea"
-        placeholder="e.g. Used new cleaner, only did half the load…"
-        rows="4"
-        maxlength="500"
-      ></textarea>
+      <h2>Edit Entry</h2>
+      <p class="edit-entry-chore" id="edit-entry-chore"></p>
+      <div class="form-group">
+        <label class="form-label" for="edit-entry-datetime">Date &amp; Time</label>
+        <input type="datetime-local" id="edit-entry-datetime" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-entry-notes">Notes <span class="form-label-optional">(optional)</span></label>
+        <textarea
+          id="edit-entry-notes"
+          class="note-textarea"
+          placeholder="e.g. Used new cleaner, only did half…"
+          rows="3"
+          maxlength="500"
+        ></textarea>
+      </div>
       <div class="form-actions">
-        <button type="button" class="btn btn-ghost" id="cancel-note">Skip</button>
-        <button type="button" class="btn btn-primary" id="save-note">Save Note</button>
+        <button type="button" class="btn btn-ghost" id="cancel-edit-entry">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-edit-entry">Save</button>
       </div>
     </div>
   </div>
