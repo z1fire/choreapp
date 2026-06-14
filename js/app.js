@@ -144,6 +144,15 @@ function logChore(choreId) {
   showLogToast(chore.name);
 }
 
+function logQuick(choreName) {
+  const entry = { id: uid(), choreId: null, choreName, doneAt: new Date().toISOString(), notes: '' };
+  state.log.push(entry);
+  lastLogId = entry.id;
+  saveState();
+  closeModal('add-modal');
+  showLogToast(choreName);
+}
+
 function undoLog() {
   if (!lastLogId) return;
   state.log = state.log.filter(e => e.id !== lastLogId);
@@ -245,9 +254,12 @@ function renderLibraryModal(searchTerm) {
       return `
         <div class="library-item${isActive ? ' library-item--added' : ''}" data-name="${escHtml(name)}">
           <span class="library-item-name">${escHtml(name)}</span>
-          ${isActive
-            ? '<span class="library-item-check">✓ Added</span>'
-            : `<button type="button" class="library-item-add" data-name="${escHtml(name)}">+ Add</button>`}
+          <div class="library-item-actions">
+            ${isActive
+              ? '<span class="library-item-check">✓ On Grid</span>'
+              : `<button type="button" class="library-log-btn" data-name="${escHtml(name)}">Log</button>
+                 <button type="button" class="library-item-add" data-name="${escHtml(name)}">+ Add</button>`}
+          </div>
         </div>`;
     }).join('');
 
@@ -257,17 +269,23 @@ function renderLibraryModal(searchTerm) {
         renderLibraryModal(searchTerm);
       });
     });
+
+    list.querySelectorAll('.library-log-btn').forEach(btn => {
+      btn.addEventListener('click', () => logQuick(btn.dataset.name));
+    });
   }
 
-  // Custom chore add button — shown when search term doesn't exactly match a library item
+  // Custom chore buttons — shown when search term doesn't exactly match a library item
   const exactMatch = state.library.some(n => n.toLowerCase() === term);
   const customWrap = document.getElementById('custom-add-wrap');
   if (term && !exactMatch) {
     const display = searchTerm.trim();
     customWrap.innerHTML = `
-      <button type="button" class="btn btn-primary" id="add-custom-btn">
-        + Add "${escHtml(display)}" as new chore
-      </button>`;
+      <div class="custom-chore-actions">
+        <button type="button" class="btn btn-ghost" id="log-custom-btn">Log "${escHtml(display)}" once</button>
+        <button type="button" class="btn btn-primary" id="add-custom-btn">+ Add to Home</button>
+      </div>`;
+    document.getElementById('log-custom-btn').addEventListener('click', () => logQuick(display));
     document.getElementById('add-custom-btn').addEventListener('click', () => {
       addCustomChore(display);
       document.getElementById('library-search').value = '';
