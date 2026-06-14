@@ -1,4 +1,4 @@
-const CACHE = 'choreapp-v1';
+const CACHE = 'choreapp-v2';
 const ASSETS = [
   './',
   './index.html',

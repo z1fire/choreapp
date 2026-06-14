@@ -554,11 +554,18 @@ function registerSW() {
 }
 
 // ── Install Banner ─────────────────────────────────────────────────────────
+function hideBanner() {
+  document.getElementById('install-banner').classList.add('install-banner--hidden');
+  localStorage.setItem('install_banner_done', '1');
+}
+
 function setupInstallBanner() {
-  // Already installed and running as a PWA — never show the banner
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-    return;
-  }
+  // Already installed as PWA, or user previously dismissed
+  if (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone ||
+    localStorage.getItem('install_banner_done')
+  ) return;
 
   let deferredPrompt = null;
 
@@ -568,25 +575,17 @@ function setupInstallBanner() {
     document.getElementById('install-banner').classList.remove('install-banner--hidden');
   });
 
-  // Fires when installed via browser UI (address bar button, Chrome menu, etc.)
-  window.addEventListener('appinstalled', () => {
-    document.getElementById('install-banner').classList.add('install-banner--hidden');
-    deferredPrompt = null;
-  });
+  window.addEventListener('appinstalled', hideBanner);
 
   document.getElementById('install-btn')?.addEventListener('click', async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      document.getElementById('install-banner').classList.add('install-banner--hidden');
-    }
+    if (outcome === 'accepted') hideBanner();
     deferredPrompt = null;
   });
 
-  document.getElementById('install-dismiss')?.addEventListener('click', () => {
-    document.getElementById('install-banner').classList.add('install-banner--hidden');
-  });
+  document.getElementById('install-dismiss')?.addEventListener('click', hideBanner);
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
