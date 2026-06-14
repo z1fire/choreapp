@@ -548,9 +548,19 @@ function hideToast() {
 
 // ── Service Worker ─────────────────────────────────────────────────────────
 function registerSW() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    // Force immediate check for an updated SW
+    reg.update();
+  }).catch(() => {});
+
+  // When a new SW takes control, reload once to serve fresh cached files
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
 }
 
 // ── Install Banner ─────────────────────────────────────────────────────────
