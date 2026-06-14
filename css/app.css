@@ -21,6 +21,8 @@ body {
   background: var(--bg);
   color: var(--text);
   overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -448,8 +450,15 @@ body {
   resize: none;
   line-height: 1.5;
   transition: border-color 0.15s;
+  -webkit-user-select: text;
+  user-select: text;
 }
 .note-textarea:focus { border-color: var(--green); }
+
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
 
 /* ── Toast ──────────────────────────────────────────── */
 .toast {
